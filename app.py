@@ -1,4 +1,13 @@
 """Streamlit interface for evaluating the saved EEG Eye State classifiers."""
+import sys
+import streamlit as st
+import importlib.util
+
+st.write("Python version:", sys.version)
+st.write("Python location:", sys.executable)
+st.write("Joblib installed:", importlib.util.find_spec("joblib"))
+
+
 from pathlib import Path
 import joblib
 import matplotlib.pyplot as plt

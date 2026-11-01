@@ -1,8 +1,8 @@
 streamlit
-scikit-learn
+scikit-learn==1.7.2
 numpy
 pandas
-matplotlib
-seaborn
-joblib
+matplotlib==3.9.2
+seaborn==0.13.2
+joblib==1.6.0
 ucimlrepo

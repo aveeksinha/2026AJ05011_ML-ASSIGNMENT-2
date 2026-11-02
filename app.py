@@ -1,20 +1,5 @@
 """Streamlit interface for evaluating the saved EEG Eye State classifiers."""
-import sys
-import streamlit as st
-import importlib.util
-import importlib.metadata
 
-st.write("Python version:", sys.version)
-st.write("Python location:", sys.executable)
-
-st.write("Joblib module:", importlib.util.find_spec("joblib"))
-
-try:
-    st.write("Joblib version:", importlib.metadata.version("joblib"))
-except Exception as e:
-    st.write("Joblib error:", repr(e))
-
-st.stop()
 
 
 from pathlib import Path

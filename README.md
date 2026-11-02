@@ -22,7 +22,9 @@ The 14 input columns are AF3, F7, F3, FC5, T7, P7, O1, O2, P8, T8, FC6, F4, F8 a
 
 ### Data preparation and split
 
-The training script downloads the dataset using `ucimlrepo`. It keeps the chronological order and uses the first 80% of rows for training and the final 20% for testing. This time-ordered holdout is chosen to reduce the risk of evaluating on samples interleaved with very nearby observations from the same continuous recording. Median imputation and feature scaling are included in the relevant model pipelines. The test file is labelled and includes all 14 features plus `eyeDetection`.
+The training script downloads the dataset using `ucimlrepo`. It uses a stratified random 80:20 train-test split (`test_size=0.20`, `random_state=42`) so that the class proportions are maintained in both subsets. Median imputation and model-specific feature scaling or transformation are included in the pipelines. GridSearchCV with 3-fold cross-validation is used to tune the model hyperparameters. The test file is labelled and includes all 14 features plus `eyeDetection`.
+
+**Evaluation note:** Because the EEG rows come from a continuous recording, randomly splitting rows can place temporally close observations in both training and test sets. This may make the reported scores more optimistic than a strictly chronological or subject-independent evaluation. The scores below should therefore be interpreted as results for this stratified random split.
 
 ## c. GitHub Repository Link
 
@@ -30,7 +32,7 @@ The training script downloads the dataset using `ucimlrepo`. It keeps the chrono
 
 ## d. Models Used and Evaluation Metrics
 
-The five required classifiers are:
+The five classifiers are:
 
 1. Logistic Regression
 2. Decision Tree Classifier
@@ -38,32 +40,30 @@ The five required classifiers are:
 4. Gaussian Naive Bayes
 5. Support Vector Machine (SVM)
 
-Each model is evaluated using Accuracy, AUC, Precision, Recall, F1-score and Matthews Correlation Coefficient (MCC).
+Each model is evaluated using Accuracy, AUC, Precision, Recall, F1-score and Matthews Correlation Coefficient (MCC). Precision, Recall and F1 are calculated for the positive class (eyeDetection = 1).
 
 ### Model comparison
 
-Run `python train_models.py` to calculate the actual results. The script writes `results/model_comparison.csv`. Add those measured values to this table before final submission; no performance values are pre-filled or invented here.
+The following values are from the experiment recorded in `results/model_comparison.csv`. Values are shown to four decimal places.
 
 | ML Model Name | Accuracy | AUC | Precision | Recall | F1 | MCC |
 |---|---:|---:|---:|---:|---:|---:|
-| Logistic Regression | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment |
-| Decision Tree | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment |
-| KNN | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment |
-| Naive Bayes | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment |
-| Support Vector Machine | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment | Run experiment |
+| Logistic Regression | 0.6272 | 0.6700 | 0.6178 | 0.4446 | 0.5171 | 0.2345 |
+| Decision Tree | 0.8274 | 0.8457 | 0.8270 | 0.7784 | 0.8020 | 0.6503 |
+| KNN | 0.9119 | 0.9697 | 0.9148 | 0.8862 | 0.9003 | 0.8217 |
+| Naive Bayes | 0.5664 | 0.5776 | 0.5635 | 0.1517 | 0.2390 | 0.0854 |
+| Support Vector Machine | 0.7463 | 0.8455 | 0.8115 | 0.5665 | 0.6673 | 0.4925 |
 
 ### Observations on model performance
 
-Write observations after running the experiment. Compare the six metrics rather than selecting a winner using accuracy alone. Consider whether the model balances precision and recall and whether its MCC and AUC support the same conclusion.
-
 | ML Model Name | Observation about model performance |
 |---|---|
-| Logistic Regression | Complete after evaluating the model. |
-| Decision Tree | Complete after evaluating the model. |
-| KNN | Complete after evaluating the model. |
-| Naive Bayes | Complete after evaluating the model. |
-| Support Vector Machine | Complete after evaluating the model. |
-| Overall winner | Select based on the measured test metrics and explain the trade-off. |
+| Logistic Regression | Accuracy is 0.6272 and AUC is 0.6700. Its recall (0.4446) is lower than its precision (0.6178), meaning it misses a considerable number of actual eye-closed observations. The MCC of 0.2345 indicates relatively weak overall agreement. |
+| Decision Tree | The Decision Tree performs well, with accuracy of 0.8274 and F1-score of 0.8020. Precision (0.8270) and recall (0.7784) are reasonably balanced. Its AUC of 0.8457 and MCC of 0.6503 also indicate good class separation and prediction agreement. |
+| KNN | KNN gives the strongest results across all six reported metrics: accuracy 0.9119, AUC 0.9697, precision 0.9148, recall 0.8862, F1-score 0.9003 and MCC 0.8217. Its precision and recall are both high and relatively balanced, making it the best-performing model in this experiment. |
+| Naive Bayes | Naive Bayes has the lowest accuracy (0.5664), AUC (0.5776), F1-score (0.2390) and MCC (0.0854). Its recall is particularly low at 0.1517, showing that it fails to identify many actual eye-closed observations in this test set. |
+| Support Vector Machine | SVM achieves moderate accuracy (0.7463) and AUC (0.8455). Its precision is 0.8115, but recall is lower at 0.5665, so it is more conservative in predicting the positive class. Its F1-score is 0.6673 and MCC is 0.4925. |
+| Overall conclusion | KNN is the best-performing model on this test split because it has the highest value for each of the six metrics. Decision Tree is the second-strongest model. Logistic Regression and Naive Bayes perform less effectively, especially in recall and MCC. These conclusions apply to the stratified random split used in this experiment; a chronological holdout would be a useful additional robustness check. |
 
 ## Project files
 
@@ -97,7 +97,7 @@ Push the completed project, including the generated model files and test CSV, to
 ## Assignment submission reminders
 
 - Add the generated `test_data.csv` and all five saved models to the repository.
-- Replace the result placeholders above with the actual metrics and write evidence-based observations.
+- Keep the model comparison table and observations synchronized with the latest `results/model_comparison.csv` after any retraining.
 - Deploy the Streamlit app and include its live URL in the PDF.
 - Perform the assignment on BITS Virtual Lab and capture the required screenshot yourself.
 - Include the README content in the submitted PDF, in the order required by the assignment.
